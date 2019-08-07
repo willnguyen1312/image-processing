@@ -1,26 +1,68 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useEffect } from "react";
+import styled from "styled-components";
+import imageSrc from "./images/Tulips.jpg";
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 300px;
+`;
+
+const Img = styled.img`
+  height: 300px;
+  width: 300px;
+  object-fit: contain;
+`;
 
 const App: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const kickOffCanvas = () => {
+    const canvas = canvasRef.current as HTMLCanvasElement;
+
+    const canvasContext = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    canvas.width = 810;
+    canvas.height = 450;
+    const image = new Image();
+    image.src = imageSrc;
+    let imageHeight, imageWidth;
+
+    image.onload = () => {
+      imageHeight = image.height;
+      imageWidth = image.width;
+      if (imageHeight > canvas.height) {
+        // Scale image if too tall
+        const oldHeight = imageHeight;
+        imageHeight = canvas.height;
+        imageWidth = Math.round(imageWidth * (imageHeight / oldHeight)); // resize height proportionally
+      }
+
+      if (imageWidth > canvas.width) {
+        // Scale image if too wide, this must happen after scaling for tall
+        const oldWidth = imageWidth;
+        imageWidth = canvas.width;
+        imageHeight = Math.round(imageHeight * (imageWidth / oldWidth));
+      }
+
+      const offsetY = Math.round((canvas.height - imageHeight) / 2);
+      const offsetX = Math.round((canvas.width - imageWidth) / 2);
+      canvasContext.drawImage(image, offsetX, offsetY, imageWidth, imageHeight);
+    };
+  };
+
+  useEffect(() => {
+    kickOffCanvas();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Wrapper>
+      <h1>Canvas</h1>
+      <canvas ref={canvasRef} />
+      <Img src={imageSrc} />
+    </Wrapper>
   );
-}
+};
 
 export default App;
