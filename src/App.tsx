@@ -1,15 +1,16 @@
 import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
-import imageSrc from "./images/Tulips.jpg";
+import imageSrc from "./images/axon.jpg";
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 300px;
+  padding-top: 100px;
 `;
 
 const Img = styled.img`
+  margin-top: 100px;
   height: 300px;
   width: 300px;
   object-fit: contain;
