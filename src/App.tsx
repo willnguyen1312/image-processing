@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState, useLayoutEffect } from "react";
 import styled from "styled-components";
-import { debounce } from "lodash";
-import imageSrc from "./images/axon.jpg";
-// import imageSrc from "./images/width.png";
+// import imageSrc from "./images/axon.jpg";
+import imageSrc from "./images/width.png";
 // import imageSrc from "./images/height.png";
 // import imageSrc from "./images/small.png";
 
@@ -166,29 +165,6 @@ const App: React.FC = () => {
         rectContext.stroke();
       }
 
-      // if (
-
-      // ) {
-      //   return;
-      // }
-
-      // const isLeftXOff = x < 0 || x > canvasWrapper.clientWidth - width - 0;
-      // const isOffY = y < 0 || y > canvasWrapper.clientHeight - height - 0;
-
-      // if (x > canvasWrapper.clientWidth - width) {
-      //   x = canvasWrapper.clientWidth - width;
-      // }
-      // if (x < 0) {
-      //   x = 0;
-      // }
-
-      // if (y > canvasWrapper.clientHeight - height) {
-      //   y = canvasWrapper.clientHeight - height;
-      // }
-      // if (y < 0) {
-      //   y = 0;
-      // }
-
       rectContext.drawImage(
         canvasContext.canvas,
         x,
@@ -208,13 +184,12 @@ const App: React.FC = () => {
   const handleMouseMove = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-    const rectContext = rectCtx as CanvasRenderingContext2D;
     if (isDraggable) {
       event.preventDefault();
       event.stopPropagation();
 
       const { mouseX, mouseY } = getMousePosition(event);
-      const { x, y, width, height } = rectData;
+      const { width, height } = rectData;
       const canvasWidth = canvasWrapperRef.current!.clientWidth;
       const canvasHeight = canvasWrapperRef.current!.clientHeight;
 
@@ -222,17 +197,17 @@ const App: React.FC = () => {
       let newY = mouseY - height / 2;
 
       if (newX > canvasWidth - width) {
-        newX = canvasWidth - width;
+        newX = canvasWidth - width - 1;
       }
       if (newX < 0) {
-        newX = 0;
+        newX = 1;
       }
 
       if (newY > canvasHeight - height) {
-        newY = canvasHeight - height;
+        newY = canvasHeight - height - 1;
       }
       if (newY < 0) {
-        newY = 0;
+        newY = 1;
       }
 
       setRectData(prevData => {
@@ -261,7 +236,6 @@ const App: React.FC = () => {
   const handleMouseDown = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-    debugger;
     if (isZoom) {
       event.preventDefault();
       event.stopPropagation();
@@ -277,11 +251,41 @@ const App: React.FC = () => {
         mouseY < y + height
       ) {
         setIsDraggable(true);
+
+        const { mouseX, mouseY } = getMousePosition(event);
+        const { width, height } = rectData;
+        const canvasWidth = canvasWrapperRef.current!.clientWidth;
+        const canvasHeight = canvasWrapperRef.current!.clientHeight;
+
+        let newX = mouseX - width / 2;
+        let newY = mouseY - height / 2;
+
+        if (newX > canvasWidth - width) {
+          newX = canvasWidth - width - 1;
+        }
+        if (newX < 0) {
+          newX = 1;
+        }
+
+        if (newY > canvasHeight - height) {
+          newY = canvasHeight - height - 1;
+        }
+        if (newY < 0) {
+          newY = 1;
+        }
+
+        setRectData(prevData => {
+          return {
+            ...prevData,
+            x: newX,
+            y: newY
+          };
+        });
       }
     }
   };
 
-  const handleMouseUp = (
+  const clearDraggable = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
     if (isZoom) {
@@ -297,13 +301,38 @@ const App: React.FC = () => {
         <Canvas zIndex={0} ref={canvasRef} />
         <Canvas
           onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
+          onMouseUp={clearDraggable}
+          onMouseLeave={clearDraggable}
           onMouseMove={handleMouseMove}
           zIndex={2}
           isDraggable={isDraggable}
           ref={rectRef}
         />
-        {isZoom && <Overlay />}
+        {isZoom && (
+          <>
+            <Overlay />
+            <button
+              style={{
+                position: "absolute",
+                left: rectData.x,
+                top: rectData.y,
+                zIndex: 2
+              }}
+            >
+              Zoom
+            </button>
+            <button
+              style={{
+                position: "absolute",
+                left: rectData.x + rectData.width - 35,
+                top: rectData.y,
+                zIndex: 2
+              }}
+            >
+              Exit
+            </button>
+          </>
+        )}
       </CanvasWrapper>
       <Img src={imageSrc} />
       <Button onClick={toggleZoom}>Zoom</Button>
