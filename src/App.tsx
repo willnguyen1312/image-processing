@@ -24,6 +24,7 @@ const CanvasWrapper = styled.div`
 interface CanvasProps {
   zIndex?: number;
   isDraggable?: boolean;
+  resize?: string;
 }
 
 const Canvas = styled.canvas<CanvasProps>`
@@ -33,7 +34,17 @@ const Canvas = styled.canvas<CanvasProps>`
   right: 0;
   bottom: 0;
   z-index: ${({ zIndex }) => zIndex || 0};
-  cursor: ${({ isDraggable }) => (isDraggable ? "move" : "initial")};
+  cursor: ${({ isDraggable, resize }) => {
+    if (isDraggable) {
+      return "move";
+    }
+
+    if (resize) {
+      return resize;
+    }
+
+    return "initial";
+  }};
 `;
 
 const Overlay = styled.div`
@@ -66,6 +77,7 @@ interface RectData {
 
 const App: React.FC = () => {
   const [isZoom, setIsZoom] = useState<boolean>(true);
+  const [resizable, setResizable] = useState<string>("");
   const [isDraggable, setIsDraggable] = useState<boolean>(false);
   const [canvasCtx, setCanvasCtx] = useState<CanvasRenderingContext2D>();
   const [rectCtx, setRectCtx] = useState<CanvasRenderingContext2D>();
@@ -157,14 +169,6 @@ const App: React.FC = () => {
         canvasWrapper.clientHeight
       );
 
-      if (isZoom) {
-        rectContext.beginPath();
-        rectContext.lineWidth = 2;
-        rectContext.strokeStyle = "red";
-        rectContext.rect(x, y, width, height);
-        rectContext.stroke();
-      }
-
       rectContext.drawImage(
         canvasContext.canvas,
         x,
@@ -177,11 +181,21 @@ const App: React.FC = () => {
         height
       );
 
-      rectContext.fillStyle = "#FFF";
-      rectContext.fillRect(x, y, 10, 10);
-      rectContext.fillRect(x, y + height - 10, 10, 10);
-      rectContext.fillRect(x + width - 10, y, 10, 10);
-      rectContext.fillRect(x + width - 10, y + height - 10, 10, 10);
+      if (isZoom) {
+        rectContext.beginPath();
+        rectContext.lineWidth = 2;
+        rectContext.strokeStyle = "red";
+        rectContext.rect(x, y, width, height);
+        rectContext.stroke();
+
+        rectContext.fillStyle = "#FFF";
+        rectContext.fillRect(x, y, 10, 10);
+        rectContext.fillRect(x, y + height - 10, 10, 10);
+        rectContext.fillRect(x + width - 10, y, 10, 10);
+        rectContext.fillRect(x + width - 10, y + height - 10, 10, 10);
+
+        rectContext.closePath();
+      }
     }
   }, [rectData, canvasCtx, rectCtx, isZoom]);
 
@@ -256,6 +270,41 @@ const App: React.FC = () => {
 
       const { x, y, width, height } = rectData;
 
+      if (mouseX > x && mouseX < x + 10 && mouseY > y && mouseY < y + 10) {
+        setResizable("se-resize");
+        return;
+      }
+
+      if (
+        mouseX > x &&
+        mouseX < x + 10 &&
+        mouseY > y + height - 10 &&
+        mouseY < y + height
+      ) {
+        setResizable("ne-resize");
+        return;
+      }
+
+      if (
+        mouseX > x + width - 10 &&
+        mouseX < x + width &&
+        mouseY > y &&
+        mouseY < y + 10
+      ) {
+        setResizable("sw-resize");
+        return;
+      }
+
+      if (
+        mouseX > x + width - 10 &&
+        mouseX < x + width &&
+        mouseY > y + height - 10 &&
+        mouseY < y + height
+      ) {
+        setResizable("nw-resize");
+        return;
+      }
+
       if (
         mouseX > x &&
         mouseX < x + width &&
@@ -269,13 +318,14 @@ const App: React.FC = () => {
     }
   };
 
-  const clearDraggable = (
+  const clearStates = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
     if (isZoom) {
       event.preventDefault();
       event.stopPropagation();
       setIsDraggable(false);
+      setResizable("");
     }
   };
 
@@ -285,11 +335,12 @@ const App: React.FC = () => {
         <Canvas zIndex={0} ref={canvasRef} />
         <Canvas
           onMouseDown={handleMouseDown}
-          onMouseUp={clearDraggable}
-          onMouseLeave={clearDraggable}
+          onMouseUp={clearStates}
+          onMouseLeave={clearStates}
           onMouseMove={handleMouseMove}
           zIndex={2}
           isDraggable={isDraggable}
+          resize={resizable}
           ref={rectRef}
         />
         {isZoom && (
