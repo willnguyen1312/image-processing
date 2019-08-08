@@ -176,10 +176,50 @@ const App: React.FC = () => {
         width,
         height
       );
+
+      rectContext.fillStyle = "#FFF";
+      rectContext.fillRect(x, y, 10, 10);
+      rectContext.fillRect(x, y + height - 10, 10, 10);
+      rectContext.fillRect(x + width - 10, y, 10, 10);
+      rectContext.fillRect(x + width - 10, y + height - 10, 10, 10);
     }
   }, [rectData, canvasCtx, rectCtx, isZoom]);
 
   const toggleZoom = () => setIsZoom(!isZoom);
+
+  const updateRectData = (
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
+    const { mouseX, mouseY } = getMousePosition(event);
+    const { width, height } = rectData;
+    const canvasWidth = canvasWrapperRef.current!.clientWidth;
+    const canvasHeight = canvasWrapperRef.current!.clientHeight;
+
+    let newX = mouseX - width / 2;
+    let newY = mouseY - height / 2;
+
+    if (newX > canvasWidth - width) {
+      newX = canvasWidth - width - 1;
+    }
+    if (newX < 0) {
+      newX = 1;
+    }
+
+    if (newY > canvasHeight - height) {
+      newY = canvasHeight - height - 1;
+    }
+    if (newY < 0) {
+      newY = 1;
+    }
+
+    setRectData(prevData => {
+      return {
+        ...prevData,
+        x: newX,
+        y: newY
+      };
+    });
+  };
 
   const handleMouseMove = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
@@ -188,35 +228,7 @@ const App: React.FC = () => {
       event.preventDefault();
       event.stopPropagation();
 
-      const { mouseX, mouseY } = getMousePosition(event);
-      const { width, height } = rectData;
-      const canvasWidth = canvasWrapperRef.current!.clientWidth;
-      const canvasHeight = canvasWrapperRef.current!.clientHeight;
-
-      let newX = mouseX - width / 2;
-      let newY = mouseY - height / 2;
-
-      if (newX > canvasWidth - width) {
-        newX = canvasWidth - width - 1;
-      }
-      if (newX < 0) {
-        newX = 1;
-      }
-
-      if (newY > canvasHeight - height) {
-        newY = canvasHeight - height - 1;
-      }
-      if (newY < 0) {
-        newY = 1;
-      }
-
-      setRectData(prevData => {
-        return {
-          ...prevData,
-          x: newX,
-          y: newY
-        };
-      });
+      updateRectData(event);
     }
   };
 
@@ -252,35 +264,7 @@ const App: React.FC = () => {
       ) {
         setIsDraggable(true);
 
-        const { mouseX, mouseY } = getMousePosition(event);
-        const { width, height } = rectData;
-        const canvasWidth = canvasWrapperRef.current!.clientWidth;
-        const canvasHeight = canvasWrapperRef.current!.clientHeight;
-
-        let newX = mouseX - width / 2;
-        let newY = mouseY - height / 2;
-
-        if (newX > canvasWidth - width) {
-          newX = canvasWidth - width - 1;
-        }
-        if (newX < 0) {
-          newX = 1;
-        }
-
-        if (newY > canvasHeight - height) {
-          newY = canvasHeight - height - 1;
-        }
-        if (newY < 0) {
-          newY = 1;
-        }
-
-        setRectData(prevData => {
-          return {
-            ...prevData,
-            x: newX,
-            y: newY
-          };
-        });
+        updateRectData(event);
       }
     }
   };
@@ -311,10 +295,10 @@ const App: React.FC = () => {
         {isZoom && (
           <>
             <Overlay />
-            <button
+            {/* <button
               style={{
                 position: "absolute",
-                left: rectData.x,
+                left: rectData.x + 10,
                 top: rectData.y,
                 zIndex: 2
               }}
@@ -324,13 +308,13 @@ const App: React.FC = () => {
             <button
               style={{
                 position: "absolute",
-                left: rectData.x + rectData.width - 35,
+                left: rectData.x + rectData.width - 45,
                 top: rectData.y,
                 zIndex: 2
               }}
             >
               Exit
-            </button>
+            </button> */}
           </>
         )}
       </CanvasWrapper>
