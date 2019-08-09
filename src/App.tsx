@@ -76,6 +76,8 @@ interface RectData {
 }
 
 const App: React.FC = () => {
+  const image = new Image();
+  image.src = imageSrc;
   const [isZoom, setIsZoom] = useState<boolean>(true);
   const [resizable, setResizable] = useState<string>("");
   const [isDraggable, setIsDraggable] = useState<boolean>(false);
@@ -107,8 +109,6 @@ const App: React.FC = () => {
     setCanvasCtx(canvasContext);
     setRectCtx(rectContext);
 
-    const image = new Image();
-    image.src = imageSrc;
     let imageHeight, imageWidth;
 
     image.onload = () => {
@@ -329,6 +329,23 @@ const App: React.FC = () => {
     }
   };
 
+  const downloadImage = () => {
+    const link = document.createElement("a");
+    link.download = "Test file";
+
+    const canvas = document.createElement("canvas");
+
+    const canctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    canctx.drawImage(image, 0, 0);
+
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
   return (
     <Wrapper>
       <CanvasWrapper ref={canvasWrapperRef}>
@@ -371,6 +388,7 @@ const App: React.FC = () => {
       </CanvasWrapper>
       <Img src={imageSrc} />
       <Button onClick={toggleZoom}>Zoom</Button>
+      <Button onClick={downloadImage}>Download</Button>
     </Wrapper>
   );
 };
