@@ -27,7 +27,7 @@ const Video = () => {
     const image = imageRef.current as HTMLImageElement;
 
     image.src = imageSrc;
-    // updateCropper(imageSrc);
+    updateCropper(imageSrc);
   };
 
   const updateCropper = (url: string) => {
@@ -44,9 +44,9 @@ const Video = () => {
     <div>
       <button onClick={getFrame}>Get frame</button>
       <h1>Video</h1>
+      <video onSeeked={getFrame} ref={videoRef} controls src={videoSrc} />
       <canvas style={{ display: "none" }} ref={canvasRef} />
-      <video ref={videoRef} controls src={videoSrc} />
-      <div>
+      <div style={{ width: 640, height: 360 }}>
         <img style={{ maxWidth: "100%" }} ref={imageRef} />
       </div>
     </div>

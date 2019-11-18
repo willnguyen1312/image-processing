@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "cropperjs/dist/cropper.css";
 import "./index.css";
-import App from "./Cropper";
+import App from "./Video";
 
 ReactDOM.render(<App />, document.getElementById("root"));
 
